@@ -75,7 +75,7 @@ curl http://localhost:8139/possible_wordcheck?input=nkjsnd
   "response": false
 }
 
-curl http://localhost:8139/possible_wordcheck_strict?input=juggernaut
+curl http://localhost:8139/possible_wordcheck?input=juggernaut
 {
   "response": true
 }
@@ -134,6 +134,8 @@ curl "http://localhost:8139/possible_wordcheck_strict?input=quidquid%20latine%20
   "response": false
 }
 </code></pre>
+
+<p>Note: Since data based on a bigram model is used by default, the program is currently unable to detect words like <em>tsunami</em> as borrowed. The letter sequence <em>ts</em> at the beginning is uncommon for English words, and using the trigram data for letters should detect words of this nature.</p>
 
 <h4>/wordcheck</h4>
 

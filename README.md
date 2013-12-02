@@ -73,7 +73,7 @@ Besides the standard words, accepts anything that looks like a word in the langu
       "response": false
     }
 
-    curl http://localhost:8139/possible_wordcheck_strict?input=juggernaut
+    curl http://localhost:8139/possible_wordcheck?input=juggernaut
     {
       "response": true
     }
@@ -99,6 +99,7 @@ But what about something like [*chandelier*](http://www.etymonline.com/index.php
     {
       "response": true
     }
+
 
 While the intended use for this is to check words, it works on the sentence level too.
 If you are testing just from a browser, you won't have to spearate spaces like I did here. 
@@ -129,6 +130,8 @@ Same as *possible\_wordcheck\_strict*, except that the polarity is reversed. Ret
     {
       "response": false
     }
+
+Note: Since data based on a bigram model is used by default, the program is currently unable to detect words like *tsunami* as borrowed. The letter sequence *ts* at the beginning is uncommon for English words, and using the trigram data for letters should detect words of this nature.
 
 
 #### /wordcheck
