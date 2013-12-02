@@ -140,8 +140,8 @@ if __name__ == '__main__':
         input_file=sys.argv[3]
         lines = [line.rstrip('\n') for line in open(input_file)]
         for line in lines:
-            #print is_possible_word(line, bigram_file, stdout_logger, colors=True), '\n'
-            print is_possible_word(line, bigram_file, logger=stdout_logger, colors=False), '\n'
+            print is_possible_word(line, bigram_file, logger=stdout_logger, colors=True), '\n'
+            #print is_possible_word(line, bigram_file, logger=stdout_logger, colors=False), '\n'
 
     elif sys.argv[2]=='-i':
         input_str = sys.argv[3]
