@@ -73,17 +73,21 @@ Besides the standard words, accepts anything that looks like a word in the langu
       "response": false
     }
 
-    curl http://localhost:8139/possible_wordcheck?input=juggernaut
+    curl http://localhost:8139/possible_wordcheck?input=english
     {
       "response": true
     }
 
-
 #### /possible\_wordcheck\_strict
 
-Works like *possible_wordcheck*, but the idea here is to try and completely forbid *non-native* (or [loan words](http://en.wikipedia.org/wiki/Loanword)) in the language. For instance, something like *Qatar* in English -- majority of English words have [q followed by u](http://english.stackexchange.com/questions/12326/why-is-q-followed-by-a-u). Or consider *juggernaut*, whose origins lie in [Sanskrit](http://en.wikipedia.org/wiki/Sanskrit) (this word has a really colorful [etymology](http://www.etymonline.com/index.php?term=juggernaut), btw). This route would forbid both these words. In contrast, current implementation of *possible_wordcheck* accepts cases like *Qatar* and *juggernaut*. That is, */possible_wordcheck* accepts (or tries to accept) all stuff that you are likely to encounter in English, even though they are not true native words. This one is stricter. 
+Works like *possible_wordcheck*, but the idea here is to try and completely forbid *non-native* (or [loan words](http://en.wikipedia.org/wiki/Loanword)) in the language. For instance, something like *Qatar* in English -- majority of English words have [q followed by u](http://english.stackexchange.com/questions/12326/why-is-q-followed-by-a-u). Or consider *juggernaut*, whose origins lie in [Sanskrit](http://en.wikipedia.org/wiki/Sanskrit) (this word has a really colorful [etymology](http://www.etymonline.com/index.php?term=juggernaut), btw). Or [*karaoke*](http://www.etymonline.com/index.php?term=karaoke), from Japanese. This route would forbid all these words. In contrast, current implementation of *possible_wordcheck* accepts cases like *Qatar*, *karaoke* and *juggernaut*. That is, */possible_wordcheck* accepts (or tries to accept) all stuff that you are likely to encounter in English, even though they are not true native words. This one is stricter. 
 
     curl http://localhost:8139/possible_wordcheck_strict?input=qatar
+    {
+      "response": false
+    }
+
+    curl http://localhost:8139/possible_wordcheck_strict?input=karaoke
     {
       "response": false
     }
@@ -99,7 +103,6 @@ But what about something like [*chandelier*](http://www.etymonline.com/index.php
     {
       "response": true
     }
-
 
 While the intended use for this is to check words, it works on the sentence level too.
 If you are testing just from a browser, you won't have to spearate spaces like I did here. 
@@ -121,22 +124,27 @@ If you are testing just from a browser, you won't have to spearate spaces like I
 
 The English sentence was accepted, but Nepali and Latin ones were not.
 
-
 #### /borrowcheck
 
 Same as *possible\_wordcheck\_strict*, except that the polarity is reversed. Returns true if input is determined as a borrowed word.
 
-    curl http://localhost:8139/borrowcheck?input=juggernaut
+    curl http://localhost:8139/borrowcheck?input=karaoke
+    {
+      "response": true
+    }
+
+    curl http://localhost:8139/borrowcheck?input=orchestra
     {
       "response": false
     }
 
-Note: Since data based on a bigram model is used by default, the program is currently unable to detect words like *tsunami* as borrowed. The letter sequence *ts* at the beginning is uncommon for English words, and using the trigram data for letters should detect words of this nature.
+Note: Since data based on a bigram model is used by default, the program is currently unable to detect words like *tsunami* as borrowed. The letter sequence *ts* at the beginning is uncommon for English words, and using the trigram data for letters should detect words of this nature. (In fact, using the trigram data is better for detecting borrowed words, but bigram data is used by default as it was more accomodating in my tests when it came to deciding whether an input could be a valid English word (whether it be borrowed or native).
 
+Also, this will not detect all non-native words. For instance, [*bandana*](http://www.etymonline.com/index.php?term=bandana) is from Sanskrit too, but the program considers this as not borrowed, since it is sufficiently English (cf. *band*) to fool the program. 
 
 #### /wordcheck
 
-Standard dictionary check, using the pyenchant library. If you want certain words to be accepted by the system, just add the word to the file *mywords.txt* (symlinked in the root folder from *scripts/wordcheck*) For instance, you could add *embiggen* to the list and it would be accepted. Note that adding words here will affect */possible_wordcheck* (but not */possible_wordcheck_strict*) because to catch cases like *Qatar*, */possible_wordcheck* uses the same dictionary check as this one (that procedure only affects false negatives -- things considered not words through the probabilistic method, like *Qatar* and *juggernaut*, but that are actually used in English)
+Standard dictionary check, using the pyenchant library. If you want certain words to be accepted by the system, just add the word to the file *mywords.txt* (symlinked in the root folder from *scripts/wordcheck*) For instance, you could add *embiggen* to the list and it would be accepted. Note that adding words here will affect */possible_wordcheck* (but not */possible_wordcheck_strict*) because to catch cases like *Qatar*, */possible_wordcheck* uses the same dictionary check as this one (that procedure only affects false negatives -- things considered not words through the probabilistic method, like *Qatar* and *karaoke*, but that are actually used in English)
 
     curl http://localhost:8139/wordcheck?input=english
     {
@@ -148,12 +156,23 @@ Standard dictionary check, using the pyenchant library. If you want certain word
       "response": false
     }
 
-
 #### /spellcheck
+
+Check if the word is spelled correctly. Like */wordcheck*, but takes case into account.
 
     curl http://localhost:8139/spellcheck?input=procastination
     {
       "response": false
+    }
+
+    curl http://localhost:8139/spellcheck?input=qatar
+    {
+      "response": false
+    }
+
+    curl http://localhost:8139/spellcheck?input=Qatar
+    {
+      "response": true
     }
 
 #### /spell_suggestions
