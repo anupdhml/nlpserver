@@ -15,6 +15,8 @@ FALLBACK_PROB=0.0001
 
 
 def get_str_prob(input_str, bigram_dist): 
+    input_str = input_str.lower()
+    #input_str = input_str.lower() + ' '
     str_prob=1
 
     for i, letter in enumerate(input_str):
@@ -70,7 +72,7 @@ def is_possible_word(input_str, bigram_filename='data/norvig-big-bigram-letters'
     #with open('restored_data', 'w') as f:
         #json.dump(bigram_dist, f)
 
-    word_prob = get_str_prob(input_str.lower(), bigram_dist)
+    word_prob = get_str_prob(input_str, bigram_dist)
     if word_prob < THRESHOLD_PROB:
         possible_word = False
 
