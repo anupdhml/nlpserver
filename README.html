@@ -2,9 +2,9 @@
 
 <p>A <a href="http://flask.pocoo.org/">flask</a> based python web server that acts as a REST API for some Natural Language Processing tasks. Written primarily for use in <a href="http://metadatagames.com/">metadatagames</a>.</p>
 
-<p>At the moment, the feature set is small and basic, but I hope to expand on it. Current highlight is the ability to check whether a given input is a <em>possible</em> english word or not. For instance, something like <a href="http://en.wikipedia.org/wiki/Lisa_the_Iconoclast#Embiggen_and_cromulent"><em>embiggen</em></a> or <a href="http://en.wikipedia.org/wiki/Lisa_the_Iconoclast#Embiggen_and_cromulent"><em>cromulent</em></a> are possible english words, as opposed to <em>bdskajb</em>. Rather than relying on a dictionary check for the input, which ignores words that don't appear widely in dictionaries (eg: <em>lol</em>. In fact, some may not even consider this as an English word. But I digress -- this is perhaps not the place to debate on the status of such words), the system here employs a <a href="http://en.wikipedia.org/wiki/Language_model">language model</a> based on letter bigrams to decide whether an input is a possible word. Possible applications here include: system to detect online vanadalism, forbid random keyboard input but accept proper names or anything that could pass as a word, detect <a href="http://en.wikipedia.org/wiki/Loanword">borrowed words</a> in a language, etc.</p>
+<p>At the moment, the feature set is small and basic, but I hope to expand on it. Current highlight is the ability to check whether a given input is a <em>possible</em> English word or not. For instance, something like <a href="http://en.wikipedia.org/wiki/Lisa_the_Iconoclast#Embiggen_and_cromulent"><em>embiggen</em></a> or <a href="http://en.wikipedia.org/wiki/Lisa_the_Iconoclast#Embiggen_and_cromulent"><em>cromulent</em></a> are possible English words, as opposed to <em>bdskajb</em>. Rather than relying on a dictionary check for the input, which ignores words that don't appear widely in dictionaries (eg: <em>lol</em>. Some may not even consider this as an English word. But I digress -- this is perhaps not the place to debate on the status of such words.), the system here employs a <a href="http://en.wikipedia.org/wiki/Language_model">language model</a> based on letter bigrams to decide whether an input is a possible word. Possible applications here include: system to detect online vanadalism, forbid random keyboard input but accept proper names or anything that could pass as a word, detect <a href="http://en.wikipedia.org/wiki/Loanword">borrowed words</a> in a language, etc. (The main goal of the program was the second one in this list, so the default setup of the server scripts is geared towards that.)</p>
 
-<p>The server currently works for English, but with an appropriate corpus, it should be extensible to other langauges. Look at the <em>scripts</em> folder for more details on that. The scripts there are stand-alone python scripts and may be used independently of the server.</p>
+<p>The server currently works for English, but with an appropriate corpus, it should be extensible to other languages. Look at the <em>scripts</em> folder for more details on that. The scripts there are stand-alone python scripts and may be used independently of the server.</p>
 
 <p>While the system here works fairly well, my implementation here is not the most excellent one. One day, I'll learn enough stats and re-work some parts.</p>
 
@@ -31,12 +31,12 @@
 
 <p>Go to <a href="http://localhost:8139">http://localhost:8139</a> and you should see a simple welcome message.</p>
 
-<p>Basic configuration is handled from <em>config.py</em> where things like server name and port can be changed. If you are using this in a production environment, set the <em>DEBUG</em> flag to <em>False</em> here. Messages get logged to <em>nlpserver.log</em> file (if you ran it from the same directory as the <em>run_nlpserver.py</em> file, the log file will be right there.) Make sure that you have a symlink pointing to <em>scripts</em> in the <em>nlpserver</em> folder, if you encounter moudle import errors related to the nlp scripts. If you can't form a symlink (eg: on Windows machines), just move the <em>scripts</em> folder inside <em>nlpserver</em>.</p>
+<p>Basic configuration is handled from <em>config.py</em> where things like server name and port can be changed. If you are using this in a production environment, set the <em>DEBUG</em> flag to <em>False</em> here. (Debug) messages get logged to <em>nlpserver.log</em> file, in the application directory. Make sure that you have a symlink pointing to <em>scripts</em> in the <em>nlpserver</em> folder, if you encounter module import errors related to the nlp scripts. If you can't form a symlink (eg: on Windows machines), just move the <em>scripts</em> folder inside <em>nlpserver</em>.</p>
 
 <h2>Running the server with mod_wsgi</h2>
 
 <p>If you already have apache running and don't want a separate flask server running, you can install <a href="https://code.google.com/p/modwsgi/">mod_wsgi</a>
-For ubuntu/debian, this will suffice:</p>
+For Ubuntu/Debian, this will suffice:</p>
 
 <pre><code>sudo apt-get install libapache2-mod-wsgi
 </code></pre>
@@ -46,7 +46,7 @@ For ubuntu/debian, this will suffice:</p>
 <pre><code>sudo a2ensite nlpserver
 </code></pre>
 
-<p>Restart apache and you should be good to go. Note that the configuration of servername, port and logfilename is now dependent on the apache config files, and not on <em>config.py</em>.</p>
+<p>Restart apache and you should be good to go. Note that the configuration of servername and port is now dependent on the apache config files, and not on <em>config.py</em>. (Debug) messages will also get logged to the apache log files, in addition to the <em>nlpserver.log</em> file in the application dir.</p>
 
 <p>In case of problems with mod-wsgi: <a href="http://flask.pocoo.org/docs/deploying/mod_wsgi/">http://flask.pocoo.org/docs/deploying/mod_wsgi/</a>. It might also help to set the log level to <em>info</em> in the apache configuration file.</p>
 
@@ -58,7 +58,7 @@ For ubuntu/debian, this will suffice:</p>
 
 <h4>/possible_wordcheck</h4>
 
-<p>Besides the standard words, accepts anything that looks like a word in the language. For instance, in English, this would accept something like <a href="http://en.wikipedia.org/wiki/Lisa_the_Iconoclast#Embiggen_and_cromulent"><em>cromulent</em></a> or other such neologisms. Also useful for proper nouns that are not necessarily found in a dictionary. Random keyboard input is forbidden straightaway (as long as it does not look like a word, of course) This last functionality works well for input length greater than 3/4 characters, but for some short inputs, it may raise false positives. Since the word-determination here is probabilistic in nature (by default, data based on letter <a href="http://en.wikipedia.org/wiki/Bigram">bigrams</a> is used. Look in the folder <em>scripts/data/possible_wordcheck/data</em>), such results are bound to appear. A valid english word (i.e. something recorded in dictionaries) will always be accepted here though, so no false negatives.</p>
+<p>Besides the standard words, accepts anything that looks like a word in the language. For instance, in English, this would accept something like <a href="http://en.wikipedia.org/wiki/Lisa_the_Iconoclast#Embiggen_and_cromulent"><em>cromulent</em></a> or other such neologisms. Also useful for proper nouns that are not necessarily found in a dictionary. Random keyboard input is forbidden straightaway (as long as it does not look like a word, of course) This last functionality works well for input length greater than 3/4 characters, but for some short inputs, it may raise false positives. Since the word-determination here is probabilistic in nature (by default, data based on letter <a href="http://en.wikipedia.org/wiki/Bigram">bigrams</a> is used. Look in the folder <em>scripts/data/possible_wordcheck/data</em>), such results are bound to appear. A valid English word (i.e. something recorded in dictionaries) will always be accepted here though, so no false negatives.</p>
 
 <pre><code>curl http://localhost:8139/possible_wordcheck?input=cromulent
 {
@@ -71,6 +71,11 @@ curl http://localhost:8139/possible_wordcheck?input=Rauner
 }
 
 curl http://localhost:8139/possible_wordcheck?input=nkjsnd
+{
+  "response": false
+}
+
+curl http://localhost:8139/possible_wordcheck?input=maxl
 {
   "response": false
 }
@@ -145,7 +150,7 @@ curl http://localhost:8139/borrowcheck?input=orchestra
 }
 </code></pre>
 
-<p>Note: Since data based on a bigram model is used by default, the program is currently unable to detect words like <em>tsunami</em> as borrowed. The letter sequence <em>ts</em> at the beginning is uncommon for English words, and using the trigram data for letters should detect words of this nature. (In fact, using the trigram data is better for detecting borrowed words, but bigram data is used by default as it was more accomodating in my tests when it came to deciding whether an input could be a valid English word (whether it be borrowed or native).</p>
+<p>Note: Since data based on a bigram model is used by default, the program is currently unable to detect words like <em>tsunami</em> as borrowed. The letter sequence <em>ts</em> at the beginning is uncommon for English words, and using the trigram data for letters should detect words of this nature. (In fact, using the trigram data is better for detecting borrowed words, but bigram data is used by default as it was more accommodating in my tests when it came to deciding whether an input could be a valid English word (whether it be borrowed or native).</p>
 
 <p>Also, this will not detect all non-native words. For instance, <a href="http://www.etymonline.com/index.php?term=bandana"><em>bandana</em></a> is from Sanskrit too, but the program considers this as not borrowed, since it is sufficiently English (cf. <em>band</em>) to fool the program. </p>
 
@@ -204,7 +209,7 @@ curl http://localhost:8139/spellcheck?input=Qatar
 
 <h2>Usage</h2>
 
-<p>The available views output data as JSON and thus it provides a language independent solution, should you wish to perform these checks in your program. For instance, in javascript (with jquery), you could do somethings like this:</p>
+<p>The available views output data as JSON and thus it provides a language independent solution, should you wish to perform these checks in your program. For instance, in javascript (with jquery), you could do something like this:</p>
 
 <pre><code>// ajax call to the nlp api
 var word = "cromulent"
@@ -228,7 +233,7 @@ $.ajax({
 });
 </code></pre>
 
-<p>If you are using python, just import the scripts as a moudule and work from there (<em>nlpserver/views.py</em> does exactly that.)
+<p>If you are using python, just import the scripts as a module and work from there (<em>nlpserver/views.py</em> does exactly that.)
 Each of the scripts in the folder <em>scripts</em> can be run on their own from the commandline, so a third way to use this collection would be to parse their shell output.</p>
 
 <p>By <a href="https://github.com/anupdhml">Anup M. Dhamala</a>, anupdhml at gmail dot com</p>

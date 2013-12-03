@@ -3,9 +3,9 @@ NLP Server
 
 A [flask](http://flask.pocoo.org/) based python web server that acts as a REST API for some Natural Language Processing tasks. Written primarily for use in [metadatagames](http://metadatagames.com/).
 
-At the moment, the feature set is small and basic, but I hope to expand on it. Current highlight is the ability to check whether a given input is a *possible* english word or not. For instance, something like [*embiggen*](http://en.wikipedia.org/wiki/Lisa_the_Iconoclast#Embiggen_and_cromulent) or [*cromulent*](http://en.wikipedia.org/wiki/Lisa_the_Iconoclast#Embiggen_and_cromulent) are possible english words, as opposed to *bdskajb*. Rather than relying on a dictionary check for the input, which ignores words that don't appear widely in dictionaries (eg: *lol*. In fact, some may not even consider this as an English word. But I digress -- this is perhaps not the place to debate on the status of such words), the system here employs a [language model](http://en.wikipedia.org/wiki/Language_model) based on letter bigrams to decide whether an input is a possible word. Possible applications here include: system to detect online vanadalism, forbid random keyboard input but accept proper names or anything that could pass as a word, detect [borrowed words](http://en.wikipedia.org/wiki/Loanword) in a language, etc.
+At the moment, the feature set is small and basic, but I hope to expand on it. Current highlight is the ability to check whether a given input is a *possible* English word or not. For instance, something like [*embiggen*](http://en.wikipedia.org/wiki/Lisa_the_Iconoclast#Embiggen_and_cromulent) or [*cromulent*](http://en.wikipedia.org/wiki/Lisa_the_Iconoclast#Embiggen_and_cromulent) are possible English words, as opposed to *bdskajb*. Rather than relying on a dictionary check for the input, which ignores words that don't appear widely in dictionaries (eg: *lol*. Some may not even consider this as an English word. But I digress -- this is perhaps not the place to debate on the status of such words.), the system here employs a [language model](http://en.wikipedia.org/wiki/Language_model) based on letter bigrams to decide whether an input is a possible word. Possible applications here include: system to detect online vanadalism, forbid random keyboard input but accept proper names or anything that could pass as a word, detect [borrowed words](http://en.wikipedia.org/wiki/Loanword) in a language, etc. (The main goal of the program was the second one in this list, so the default setup of the server scripts is geared towards that.)
 
-The server currently works for English, but with an appropriate corpus, it should be extensible to other langauges. Look at the *scripts* folder for more details on that. The scripts there are stand-alone python scripts and may be used independently of the server.
+The server currently works for English, but with an appropriate corpus, it should be extensible to other languages. Look at the *scripts* folder for more details on that. The scripts there are stand-alone python scripts and may be used independently of the server.
 
 While the system here works fairly well, my implementation here is not the most excellent one. One day, I'll learn enough stats and re-work some parts.
 
@@ -29,13 +29,13 @@ Now run the server:
 
 Go to <http://localhost:8139> and you should see a simple welcome message.
 
-Basic configuration is handled from *config.py* where things like server name and port can be changed. If you are using this in a production environment, set the *DEBUG* flag to *False* here. Messages get logged to *nlpserver.log* file (if you ran it from the same directory as the *run_nlpserver.py* file, the log file will be right there.) Make sure that you have a symlink pointing to *scripts* in the *nlpserver* folder, if you encounter moudle import errors related to the nlp scripts. If you can't form a symlink (eg: on Windows machines), just move the *scripts* folder inside *nlpserver*.
+Basic configuration is handled from *config.py* where things like server name and port can be changed. If you are using this in a production environment, set the *DEBUG* flag to *False* here. (Debug) messages get logged to *nlpserver.log* file, in the application directory. Make sure that you have a symlink pointing to *scripts* in the *nlpserver* folder, if you encounter module import errors related to the nlp scripts. If you can't form a symlink (eg: on Windows machines), just move the *scripts* folder inside *nlpserver*.
 
 
 ## Running the server with mod_wsgi
 
 If you already have apache running and don't want a separate flask server running, you can install [mod\_wsgi](https://code.google.com/p/modwsgi/)
-For ubuntu/debian, this will suffice:
+For Ubuntu/Debian, this will suffice:
 
     sudo apt-get install libapache2-mod-wsgi
 
@@ -43,7 +43,7 @@ After installing, copy the *example/nlpserver* file to */etc/apache2/sites-enabl
 
     sudo a2ensite nlpserver
 
-Restart apache and you should be good to go. Note that the configuration of servername, port and logfilename is now dependent on the apache config files, and not on *config.py*.
+Restart apache and you should be good to go. Note that the configuration of servername and port is now dependent on the apache config files, and not on *config.py*. (Debug) messages will also get logged to the apache log files, in addition to the *nlpserver.log* file in the application dir.
 
 In case of problems with mod-wsgi: <http://flask.pocoo.org/docs/deploying/mod_wsgi/>. It might also help to set the log level to *info* in the apache configuration file.
 
@@ -56,7 +56,7 @@ The commandline utility [curl](http://curl.haxx.se/) was used for these demonstr
 
 #### /possible_wordcheck
 
-Besides the standard words, accepts anything that looks like a word in the language. For instance, in English, this would accept something like [*cromulent*](http://en.wikipedia.org/wiki/Lisa_the_Iconoclast#Embiggen_and_cromulent) or other such neologisms. Also useful for proper nouns that are not necessarily found in a dictionary. Random keyboard input is forbidden straightaway (as long as it does not look like a word, of course) This last functionality works well for input length greater than 3/4 characters, but for some short inputs, it may raise false positives. Since the word-determination here is probabilistic in nature (by default, data based on letter [bigrams](http://en.wikipedia.org/wiki/Bigram) is used. Look in the folder *scripts/data/possible_wordcheck/data*), such results are bound to appear. A valid english word (i.e. something recorded in dictionaries) will always be accepted here though, so no false negatives.
+Besides the standard words, accepts anything that looks like a word in the language. For instance, in English, this would accept something like [*cromulent*](http://en.wikipedia.org/wiki/Lisa_the_Iconoclast#Embiggen_and_cromulent) or other such neologisms. Also useful for proper nouns that are not necessarily found in a dictionary. Random keyboard input is forbidden straightaway (as long as it does not look like a word, of course) This last functionality works well for input length greater than 3/4 characters, but for some short inputs, it may raise false positives. Since the word-determination here is probabilistic in nature (by default, data based on letter [bigrams](http://en.wikipedia.org/wiki/Bigram) is used. Look in the folder *scripts/data/possible_wordcheck/data*), such results are bound to appear. A valid English word (i.e. something recorded in dictionaries) will always be accepted here though, so no false negatives.
 
     curl http://localhost:8139/possible_wordcheck?input=cromulent
     {
@@ -69,6 +69,11 @@ Besides the standard words, accepts anything that looks like a word in the langu
     }
 
     curl http://localhost:8139/possible_wordcheck?input=nkjsnd
+    {
+      "response": false
+    }
+
+    curl http://localhost:8139/possible_wordcheck?input=maxl
     {
       "response": false
     }
@@ -138,7 +143,7 @@ Same as *possible\_wordcheck\_strict*, except that the polarity is reversed. Ret
       "response": false
     }
 
-Note: Since data based on a bigram model is used by default, the program is currently unable to detect words like *tsunami* as borrowed. The letter sequence *ts* at the beginning is uncommon for English words, and using the trigram data for letters should detect words of this nature. (In fact, using the trigram data is better for detecting borrowed words, but bigram data is used by default as it was more accomodating in my tests when it came to deciding whether an input could be a valid English word (whether it be borrowed or native).
+Note: Since data based on a bigram model is used by default, the program is currently unable to detect words like *tsunami* as borrowed. The letter sequence *ts* at the beginning is uncommon for English words, and using the trigram data for letters should detect words of this nature. (In fact, using the trigram data is better for detecting borrowed words, but bigram data is used by default as it was more accommodating in my tests when it came to deciding whether an input could be a valid English word (whether it be borrowed or native).
 
 Also, this will not detect all non-native words. For instance, [*bandana*](http://www.etymonline.com/index.php?term=bandana) is from Sanskrit too, but the program considers this as not borrowed, since it is sufficiently English (cf. *band*) to fool the program. 
 
@@ -195,7 +200,7 @@ This just uses the pyenchant library. If you want to write a spelling corrector 
 
 ## Usage
 
-The available views output data as JSON and thus it provides a language independent solution, should you wish to perform these checks in your program. For instance, in javascript (with jquery), you could do somethings like this:
+The available views output data as JSON and thus it provides a language independent solution, should you wish to perform these checks in your program. For instance, in javascript (with jquery), you could do something like this:
 
     // ajax call to the nlp api
     var word = "cromulent"
@@ -218,7 +223,7 @@ The available views output data as JSON and thus it provides a language independ
         }
     });
 
-If you are using python, just import the scripts as a moudule and work from there (*nlpserver/views.py* does exactly that.)
+If you are using python, just import the scripts as a module and work from there (*nlpserver/views.py* does exactly that.)
 Each of the scripts in the folder *scripts* can be run on their own from the commandline, so a third way to use this collection would be to parse their shell output.
 
 
